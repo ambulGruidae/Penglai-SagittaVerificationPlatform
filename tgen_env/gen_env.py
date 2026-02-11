@@ -1264,13 +1264,13 @@ class {_moduleName} {_classParameter} extends tcnt_rm_base#(.seq_item_t({_envNam
     virtual tc_if vif;
     {_envName}_env_cfg cfg;
 
-    //aa_test_reg_model		reg_model;
+    //aa_test_reg_model reg_model;
 {_portDeclare}
 
     {_registerParameter}
 
-    extern         function      new(string name, uvm_component parent);
-    extern         function void build_phase(uvm_phase phase);
+    extern function new(string name, uvm_component parent);
+    extern function void build_phase(uvm_phase phase);
     extern virtual task main_phase(uvm_phase phase);
     extern virtual task main_process();
 endclass
@@ -1407,7 +1407,7 @@ def genEnv_env(GeneralDict,AgentList,path):
         registerParameter = "`uvm_component_param_utils({_moduleName}{_parameterList})".format(_moduleName=ModuleName,_parameterList=parameterList)
     else:
         registerParameter = "`uvm_component_utils({_moduleName})".format(_moduleName=ModuleName)
-    memberDeclare,memberNew,fifoConnect, = '','',''
+    memberDeclare,memberNew,fifoConnect,sqrConnect, = '','','',''
     memberDeclare +='    {_envName}_env_cfg cfg;\n'.format(_envName=GeneralDict['env_name'])
     memberNew +='''
     if (!uvm_config_db#({_envName}_env_cfg)::get(this, "", "cfg", this.cfg)) begin
@@ -1437,6 +1437,10 @@ def genEnv_env(GeneralDict,AgentList,path):
     this.u_{_agentName}_agent[{_stringName}].mon_item_port.connect(this.{_agentName}_mon2rm_fifo.analysis_export);
     this.rm.{_agentName}_mon_item_port.connect(this.{_agentName}_mon2rm_fifo.blocking_get_export);
 '''.format(_agentName=agent['agent_name'],_stringName=stringName)[1:]
+                if agent['agent_mode']=='master':
+                    sqrConnect +='''
+    this.sqr.{_agentName}_sqr_{_stringName} = u_{_agentName}_agent[{_stringName}].sqr;
+'''.format(_agentName=agent['agent_name'],_stringName=stringName)[1:]
         elif agent['instance_num']==1:
             memberDeclare +='''
     {_instanceByName}_agent {_agentDecParameterList} u_{_agentName}_agent;
@@ -1450,6 +1454,10 @@ def genEnv_env(GeneralDict,AgentList,path):
             fifoConnect +='''
     this.u_{_agentName}_agent.mon_item_port.connect(this.{_agentName}_mon2rm_fifo.analysis_export);
     this.rm.{_agentName}_mon_item_port.connect(this.{_agentName}_mon2rm_fifo.blocking_get_export);
+'''.format(_agentName=agent['agent_name'])
+            if agent['agent_mode']=='master':
+                sqrConnect +='''
+    this.sqr.{_agentName}_sqr = u_{_agentName}_agent.sqr;
 '''.format(_agentName=agent['agent_name'])
         else:
             memberDeclare +='''
@@ -1469,6 +1477,9 @@ def genEnv_env(GeneralDict,AgentList,path):
         this.rm.{_agentName}_mon_item_port.connect(this.{_agentName}_mon2rm_fifo.blocking_get_export);
 '''.format(_agentName=agent['agent_name'])
             fifoConnect += ' '*4 + 'end\n'
+            if agent['agent_mode']=='master':
+                for loop_i in range(agent['instance_num']):
+                    sqrConnect +='    this.sqr.{_agentName}_sqr_{_loopI} = u_{_agentName}_agent[{_loopI}].sqr;\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
     fifoConnect +='''
     this.rm.rm_item_exp_port.connect(this.rm2scb_exp_fifo.analysis_export);
     this.scb.exp_port.connect(this.rm2scb_exp_fifo.blocking_get_export);
@@ -1480,49 +1491,190 @@ def genEnv_env(GeneralDict,AgentList,path):
     uvm_tlm_analysis_fifo #({_envName}_common_xaction{_parameterList}) rm2scb_act_fifo;\n
     {_envName}_rm {_parameterList} rm;
     //aa_test_reg_model	reg_model;
-    tcnt_scb_base #({_envName}_common_xaction{_parameterList}) scb;
-    // {_envName}_scb scb;
+    {_envName}_virtual_sequencer sqr;
+    {_envName}_scb scb;
 '''.format(_envName=GeneralDict['env_name'],_parameterList=parameterList)
     memberNew +='''
     rm2scb_exp_fifo = new($sformatf("rm2scb_exp_fifo"), this);
     rm2scb_act_fifo = new($sformatf("rm2scb_act_fifo"), this);\n
     this.rm = {_envName}_rm{_parameterList}::type_id::create("rm", this);
     uvm_config_db#({_envName}_env_cfg)::set(this, "rm", "cfg", this.cfg);
-    this.scb = tcnt_scb_base#({_envName}_common_xaction{_parameterList})::type_id::create("scb", this);
-    // this.scb = {_envName}_scb::type_id::create("scb", this);\n
-    // this.sqr = {_envName}_virtual_sequencer::type_id::create("sqr", this);
-    // uvm_config_db#({_envName}_env_cfg)::set(this, "sqr", "cfg", this.cfg);
+    this.scb = {_envName}_scb::type_id::create("scb", this);\n
+    this.sqr = {_envName}_virtual_sequencer::type_id::create("sqr", this);
+    uvm_config_db#({_envName}_env_cfg)::set(this, "sqr", "cfg", this.cfg);
 '''.format(_envName=GeneralDict['env_name'],_parameterList=parameterList)
     fileContext = '''{_Title}
 class {_moduleName} {_classParameter} extends tcnt_env_base;
 {_memberDeclare}
     {_registerParameter}
-
-    extern         function      new(string name, uvm_component parent);
+    extern function new(string name, uvm_component parent);
     extern virtual function void build_phase(uvm_phase phase);
     extern virtual function void connect_phase(uvm_phase phase);
-endclass
+endclass : {_moduleName}
 
 function {_moduleName}::new(string name, uvm_component parent);
     super.new(name, parent);
-endfunction
+endfunction : new
 
 function void {_moduleName}::build_phase(uvm_phase phase);
     super.build_phase(phase);
 {_memberNew}
-endfunction
+endfunction : build_phase
 
 function void {_moduleName}::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     // rm.reg_model = this.reg_model;
     // this.sqr.xx_sqr = u_xx_agent.sqr;
 {_fifoConnect}
+{_sqrConnect}
 endfunction
 
 `endif
 
-'''.format(_Title=Title,_moduleName=ModuleName,_memberDeclare=memberDeclare,_memberNew=memberNew,_fifoConnect=fifoConnect,_envName=GeneralDict['env_name'],\
+'''.format(_Title=Title,_moduleName=ModuleName,_memberDeclare=memberDeclare,_memberNew=memberNew,_fifoConnect=fifoConnect,_sqrConnect=sqrConnect,_envName=GeneralDict['env_name'],\
     _classParameter=classParameter,_registerParameter=registerParameter)
+    fileName = ModuleName+'.'+FileType
+    genFile(path,fileName,fileContext)
+
+def genEnv_sqr(GeneralDict,AgentList,path):
+    ModuleName = '{_envName}_virtual_sequencer'.format(_envName=GeneralDict['env_name'])
+    AuthorName = GeneralDict['author']
+    Description = 'virtual sequencer'
+    FileType = 'sv'
+    Title = genTitle(AuthorName,ModuleName,FileType,Description)
+    agentSqr = ''
+    for agent in AgentList:
+        if agent['agent_mode']=='master':
+            if agent['instance_num']==1:
+                agentSqr +='    {_agentName}_agent_sequencer {_agentName}_sqr;\n'.format(_agentName=agent['agent_name'])
+            else:
+                for loop_i in range(agent['instance_num']):
+                    agentSqr +='    {_agentName}_agent_sequencer {_agentName}_sqr_{_loopI};\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+    fileContext = '''{_Title}
+class {_moduleName} extends tcnt_sequencer_base #({_envName}_common_xaction);
+    virtual tc_if vif;
+{_agentSqr}
+    {_envName}_env_cfg cfg;
+
+    `uvm_component_utils({_moduleName})
+    extern function new(string name, uvm_component parent);
+    extern task main_phase(uvm_phase phase);
+    extern function void build_phase(uvm_phase phase);
+endclass : {_moduleName}
+
+function {_moduleName}::new(string name, uvm_component parent);
+    super.new(name, parent);
+endfunction : new
+
+function void {_moduleName}::build_phase(uvm_phase phase);
+    if (!uvm_config_db#({_envName}_env_cfg)::get(this, "", "cfg", this.cfg)) begin
+        cfg = {_envName}_env_cfg::type_id::create("cfg", this);
+        void'(this.cfg.randomize());
+        `uvm_warning(get_type_name(), $sformatf("build_phase: sqr cfg is not set, create and randomize by self!"));
+    end
+endfunction : build_phase
+
+task {_moduleName}::main_phase(uvm_phase phase);
+    super.main_phase(phase);
+    phase.raise_objection(this);
+    phase.drop_objection(this);
+    `uvm_info(get_type_name(), "exit main_phase", UVM_NONE)
+endtask : main_phase
+
+`endif
+
+'''.format(_Title=Title,_moduleName=ModuleName,_agentSqr=agentSqr,_envName=GeneralDict['env_name'])
+    fileName = ModuleName+'.'+FileType
+    genFile(path,fileName,fileContext)
+
+def genEnv_scb(GeneralDict,AgentList,path):
+    ModuleName = '{_envName}_scb'.format(_envName=GeneralDict['env_name'])
+    AuthorName = GeneralDict['author']
+    Description = 'scoreboard'
+    FileType = 'sv'
+    Title = genTitle(AuthorName,ModuleName,FileType,Description)
+    agentXactionTmp = ''
+    agentXactionQueueDeclare = ''
+    agentXactionQueueDelete = ''
+    for agent in AgentList:
+        if agent['agent_mode']=='master':
+            if agent['instance_num']==1:
+                agentXactionTmp +='    {_agentName}_agent_xaction tmp_tran_{_agentName};\n'.format(_agentName=agent['agent_name'])
+                agentXactionQueueDeclare += '    {_agentName}_agent_xaction {_agentName}_expect_queue[$];\n'.format(_agentName=agent['agent_name'])
+                agentXactionQueueDelete += ' '*12 + '{_agentName}_expect_queue.delete();\n'.format(_agentName=agent['agent_name'])
+            else:
+                for loop_i in range(agent['instance_num']):
+                    agentXactionTmp +='    {_agentName}_agent_xaction tmp_tran_{_agentName}_{_loopI};\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+                    agentXactionQueueDeclare += '    {_agentName}_agent_xaction {_agentName}_expect_queue_{_loopI}[$];\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+                    agentXactionQueueDelete += ' '*12 + '{_agentName}_expect_queue_{_loopI}.delete()'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+    fileContext = '''{_Title}
+class {_moduleName} extend tcnt_scb_base #(.seq_item_t({_envName}_common_xaction));
+    virtual tc_if vif;
+{_agentXactionQueueDeclare}
+    `uvm_component_utils({_moduleName})
+
+    extern function new(string name, uvm_component parent);
+    extern virtual function void build_phase(uvm_phase phase);
+    extern virtual task main_phase(uvm_phase phase);
+    extern virtual task scb_compare();
+endclass : {_moduleName}
+
+function {_moduleName}::new(string name, uvm_component parent);
+    super.new(name, parent);
+endfunction : new
+
+function void {_moduleName}::build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(virtual tc_if)::get(this, "", "vif", vif)) begin
+        `uvm_fatal(get_type_name(), $sformatf("virtual interface must be set for vif(tc_if)!"));
+    end
+endfunction : build_phase
+
+task {_moduleName}::main_phase(uvm_phase phase);
+    super.main_phase(phase);
+    this.scb_compare();
+endtask : main_phase
+
+task {_moduleName}::scb_compare();
+    {_envName}_common_xaction get_expect, get_actual;
+{_agentXactionTmp}
+    bit result;
+
+    fork
+        forever begin
+            @(negedge vif.rst_n);
+            repeat(10) @(negedge vif.clk);
+{_agentXactionQueueDelete}
+        end
+        forever begin
+            exp_port.get(get_expect);
+            if (get_expect == null) begin
+                `uvm_fatal(get_name, "scoreboard had get expect NULL")
+            end
+            // TODO
+        end
+        forever begin
+            act_port.get(get_actual);
+            if (get_actual == null) begin
+                `uvm_fatal(get_name, "scoreboard had get actual NULL")
+            end
+            // TODO
+            total_pkt_num[get_actual.channel_id]++;
+            // result = get_actual.xx_tr.compare(tmp_tran_xx);
+            if (result) begin
+                match_pkt_num[get_actual.channel_id]++;
+                `uvm_info($sformatf("CHANNEL(%0d)",get_actual.channel_id), $sformatf("Compare SUCCESSFULLY of %0d packet", this.total_pkt_num[get_actual.channel_id]), UVM_LOW)
+            end else begin
+                mismatch_pkt_num[get_actual.channel_id]++;
+                `uvm_error($sformatf("CHANNEL(%0d)",get_actual.channel_id), $sformatf("Compare FAILED of %0d packet", this.total_pkt_num[get_actual.channel_id]))
+            end
+        end
+    join
+endtask : scb_compare
+
+`endif
+
+'''.format(_Title=Title,_moduleName=ModuleName,_agentXactionQueueDeclare=agentXactionQueueDeclare,_agentXactionQueueDelete=agentXactionQueueDelete,_agentXactionTmp=agentXactionTmp,_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
 
@@ -1532,6 +1684,8 @@ def genAllEnv(GeneralDict,AgentList,PathDict):
     genEnv_rm(GeneralDict,AgentList,PathDict['env_src'])
     genEnv_cfg(GeneralDict,AgentList,PathDict['env_src'])
     genEnv_env(GeneralDict,AgentList,PathDict['env_src'])
+    genEnv_sqr(GeneralDict,AgentList,PathDict['env_src'])
+    genEnv_scb(GeneralDict,AgentList,PathDict['env_src'])
 
 ##========================================================================cfg=============================================================================================
 def reGenAuthor(GeneralDict,fileName):
@@ -2453,8 +2607,8 @@ tc_if tc_if(clk);
 initial begin
     uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top", "vif", tc_if);
     uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top*.rm", "vif", tc_if);
-    // uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top*.scb", "vif", tc_if);
-    // uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top*.sqr", "vif", tc_if);
+    uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top*.scb", "vif", tc_if);
+    uvm_config_db#(virtual tc_if)::set(null, "uvm_test_top*.sqr", "vif", tc_if);
 end
 
 `endif
@@ -3234,10 +3388,10 @@ if __name__=="__main__":
     print("============>Step9: ready to gen seqlib !")
     genAllSeqlib(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step9: ready to gen cfg !")
+    # print("============>Step9: ready to gen cfg !")
     # genAllCfg(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step10: ready to gen sim !")
+    # print("============>Step10: ready to gen sim !")
     # genAllSim(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
     print("============>Step11: env verification genarated Done !")
