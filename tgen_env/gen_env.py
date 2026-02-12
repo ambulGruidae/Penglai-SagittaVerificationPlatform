@@ -286,7 +286,7 @@ function void {_moduleName}::pack_{_agentName}(uvm_object tr);
     fileContext = '''{_Title}
 class {_moduleName} {_classParameter} extends tcnt_data_base;
 {_memberDeclare}
-    extern function new(string namei = "{_moduleName}");
+    extern function new(string name = "{_moduleName}");
     extern function void pack();
     extern function void unpack();
     extern function void pre_randomize();
@@ -388,7 +388,7 @@ endfunction
     genFile(path,fileName,fileContext)
 
 def genEnvCommon(GeneralDict, AgentList, PathDict):
-    genEnvCommon_fileList(GeneralDict,PathDict['env_common'])
+    # genEnvCommon_fileList(GeneralDict,PathDict['env_common'])
     genEnvCommon_package(GeneralDict,AgentList,PathDict['env_common'])
     genEnvCommon_dec(GeneralDict,AgentList,PathDict['env_common_src'])
     genEnvCommon_common_xaction(GeneralDict,AgentList,PathDict['env_common_src'])
@@ -718,7 +718,7 @@ def genAgent_default_sequence(GeneralDict, agent, path):
 class {_moduleName} {_agentClassParameter} extends tcnt_default_sequence_base #({_agentName}_agent_xaction{_agentParameterList});
     {_agentRegisterParameter}
 
-    extern function new(string name="{_moduleName}\");
+    extern function new(string name = "{_moduleName}");
     extern virtual task pre_body();
     extern virtual task body();
     extern virtual task post_body();
@@ -1043,6 +1043,111 @@ def genAllAgent(GeneralDict, AgentList, PathDict):
             genAgent_monitor(GeneralDict,agent,PathDict[agent['agent_name']+'_src'])
             genAgent_sequencer(GeneralDict,agent,PathDict[agent['agent_name']+'_src'])
             genAgent_agent(GeneralDict,agent,PathDict[agent['agent_name']+'_src'])
+
+##========================================================================seqlib=============================================================================================
+def genSeqlib_package(GeneralDict, AgentList, path):
+    ModuleName = 'seqlib_pkg'
+    AuthorName = GeneralDict['author']
+    Description = 'package'
+    FileType = 'sv'
+    Title = genTitle(AuthorName,ModuleName,FileType,Description)
+    importAgent = ""
+    for agent in AgentList:
+        if agent['instance_by']=='self' or 'filelist_path' in agent.keys():
+            agentName = agent['agent_name'] if agent['instance_by']=='self' else agent['instance_by']
+            importAgent += "    import {_agentName}_agent_dec::*;\n".format(_agentName=agentName)
+            importAgent += "    import {_agentName}_agent_pkg::*;\n".format(_agentName=agentName)
+    fileContext = '''{_Title}
+`ifndef TCNT_HAD_INCLUDE_UVM_MACROS
+`define TCNT_HAD_INCLUDE_UVM_MACROS
+    `include "uvm_macros.svh"
+`endif
+
+package seqlib_pkg;
+    import uvm_pkg::*;
+    import tcnt_realtime::*;
+    import tcnt_dec_base::*;
+    import tcnt_common_method::*;
+    import tcnt_base_pkg::*;
+{_importAgent}
+    import {_envName}_dec::*;
+    import {_envName}_common_pkg::*;
+    import {_envName}_env_pkg::*;
+
+    `include "{_envName}_base_sequence.sv"
+endpackage
+
+import seqlib_pkg::*;
+
+`endif
+
+'''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
+    fileName = ModuleName+'.'+FileType
+    genFile(path,fileName,fileContext)
+
+def genSeqlib_base_sequence(GeneralDict,AgentList,path):
+    seqName = GeneralDict['env_name'].lower()
+    ModuleName = '{_seqName}_base_sequence'.format(_seqName=seqName)
+    AuthorName = GeneralDict['author']
+    Description = 'base sequence'
+    FileType = 'sv'
+    Title = genTitle(AuthorName,ModuleName,FileType,Description)
+
+    agentDefaultSeq = ''
+    agentNewDefaultSeq = ''
+    for agent in AgentList:
+        if agent['agent_mode']=='master':
+            if agent['instance_num']==1:
+                agentDefaultSeq +='    {_agentName}_agent_default_sequence {_agentName}_seq;\n'.format(_agentName=agent['agent_name'])
+                agentNewDefaultSeq +='    {_agentName}_seq = new();\n'.format(_agentName=agent['agent_name'])
+            else:
+                for loop_i in range(agent['instance_num']):
+                    agentDefaultSeq +='    {_agentName}_agent_default_sequence {_agentName}_seq_{_loopI};\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+                    agentNewDefaultSeq +='    {_agentName}_seq_{_loopI} = new();\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+    fileContext = '''{_Title}
+class {_moduleName} extends tcnt_default_sequence_base #({_envName}_common_xaction);
+    int item_num = 0;
+{_agentDefaultSeq}
+    `uvm_object_utils({_moduleName})
+    `uvm_declare_p_sequencer({_envName}_virtual_sequencer)
+
+    extern function new(string name = "{_moduleName}");
+    extern virtual task pre_body();
+    extern virtual task body();
+    extern virtual task post_body();
+    extern virtual task pre_start();
+endclass : {_moduleName}
+
+function {_moduleName}::new(string name = "{_moduleName}");
+    super.new(name);
+{_agentNewDefaultSeq}
+endfunction : new
+
+task {_moduleName}::pre_body();
+    if (starting_phase != null) starting_phase.raise_objection(this);
+endtask : pre_body
+
+task {_moduleName}::pre_start();
+    `uvm_info(get_type_name(), "enter pre_start", UVM_LOW)
+endtask : pre_start
+
+task {_moduleName}::body();
+    `uvm_info(get_type_name(), "enter body", UVM_LOW)
+endtask : body
+
+task {_moduleName}::post_body();
+    if (starting_phase != null) starting_phase.drop_objection(this);
+endtask : post_body
+
+`endif
+
+'''.format(_Title=Title,_moduleName=ModuleName,_envName=GeneralDict['env_name'],_agentDefaultSeq=agentDefaultSeq,_agentNewDefaultSeq=agentNewDefaultSeq)
+    fileName = ModuleName+'.'+FileType
+    genFile(path,fileName,fileContext)
+
+def genAllSeqlib(GeneralDict,AgentList,PathDict):
+    genSeqlib_package(GeneralDict, AgentList, PathDict['seqlib'])
+    genSeqlib_base_sequence(GeneralDict,AgentList,PathDict['seqlib_src'])
 
 ##========================================================================environment=============================================================================================
 def genEnv_fileList(GeneralDict,path):
@@ -2624,6 +2729,8 @@ def GenDir(GeneralDict,AgentList):
     PathDict['tc'] = os.path.abspath(os.path.join(PathDict['env_top'],'tc'))
     PathDict['tc_src'] = os.path.abspath(os.path.join(PathDict['tc'],'src'))
     PathDict['agent'] = os.path.abspath(os.path.join(PathDict['env_top'],'agent'))
+    PathDict['seqlib'] = os.path.abspath(os.path.join(PathDict['env_top'],'seqlib'))
+    PathDict['seqlib_src'] = os.path.abspath(os.path.join(PathDict['seqlib'],'src'))
     # PathDict['regress'] = os.path.abspath(os.path.join(PathDict['env_top'],'regress'))
     for agent in AgentList:
         if agent['instance_by']=='self':
@@ -3124,7 +3231,8 @@ if __name__=="__main__":
     print("============>Step8: ready to gen tc !")
     genAllTc(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-	print("============>TODO: Step9: ready to gen seqlib !")
+    print("============>Step9: ready to gen seqlib !")
+    genAllSeqlib(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
     print("============>Step9: ready to gen cfg !")
     # genAllCfg(tmpGeneralDict,tmpAgentList,tmpPathDict)
