@@ -2676,6 +2676,108 @@ def genAllTb(GeneralDict,AgentList,PathDict):
     genTc_ifConnect(GeneralDict,AgentList,PathDict['tb'])
     genTb_TopTb(GeneralDict,AgentList,PathDict['tb'])
 
+##======================================================================Kbuild============================================================================================
+def genKbuild_top(GeneralDict,path):
+    global CurrYear
+    fileContext = '''# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
+
+obj-y += common/
+obj-y += agent/
+obj-y += env/
+obj-y += seqlib/
+
+# subdir
+subdir-rtlflags-y += +define+{_UEnvName}_UT \\
+		     +incdir+$(srctree)/$(src)/common/{_envName}_common/src \\
+		     +incdir+$(srctree)/$(src)/seqlib/src \\
+		     +incdir+$(srctree)/$(src)
+
+subdir-rtlflags-y += $(srctree)/$(src)/../lib/util/common_define.sv
+
+sim-y += tc/tc_pkg.sv
+RTLFLAGS_tc/tc_pkg.sv := +incdir+$(srctree)/$(src)/tc/src
+
+sim-y += tb/top_tb.sv
+RTLFLAGS_tb/top_tb.sv := +incdir+$(srctree)/$(src)/tb
+
+# manually wrapped DUT top: place in `tb/`, specify via sim-y
+
+# component dependencies
+$(obj)/common: $(obj)/agent
+$(obj)/env: $(obj)/agent $(obj)/common
+$(obj)/seqlib: $(obj)/env $(obj)/common
+$(obj)/tc/tc_pkg.sv.o: $(obj)/seqlib
+$(obj)/tb/top_tb.sv.o: $(obj)/tc/tc_pkg.sv.o
+'''.format(_envName=GeneralDict['env_name'],_UEnvName=GeneralDict['env_name'].upper(),_CurrYear=CurrYear)
+    fileName = 'Kbuild'
+    genFile(path,fileName,fileContext)
+
+def genKbuild_agent(GeneralDict,AgentList,path):
+    global CurrYear
+    simAgentPkg = 'sim-y := '
+    rtlflagsAgentSrc = 'rtlflags-y := '
+    for i, agent in enumerate(AgentList):
+        if i == 0:
+            simAgentPkg += '{_agentName}_agent/{_agentName}_agent_pkg.sv \\\n'.format(_agentName=agent['agent_name'])
+            rtlflagsAgentSrc += '+incdir+$(srctree)/$(src)/{_agentName}_agent/src \\\n'.format(_agentName=agent['agent_name'])
+        elif i == len(AgentList) - 1:
+            simAgentPkg += ' '*5 + '{_agentName}_agent/{_agentName}_agent_pkg.sv\n'.format(_agentName=agent['agent_name'])
+            rtlflagsAgentSrc += ' '*10 + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src\n'.format(_agentName=agent['agent_name'])
+        else:
+            simAgentPkg += ' '*5 + '{_agentName}_agent/{_agentName}_agent_pkg.sv \\\n'.format(_agentName=agent['agent_name'])
+            rtlflagsAgentSrc += ' '*10 + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src \\\n'.format(_agentName=agent['agent_name'])
+
+    fileContext = '''# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
+
+{_simAgentPkg}
+{_rtlflagsAgentSrc}
+'''.format(_simAgentPkg=simAgentPkg,_rtlflagsAgentSrc=rtlflagsAgentSrc,_CurrYear=CurrYear)
+    fileName = 'Kbuild'
+    genFile(path,fileName,fileContext)
+
+def genKbuild_common(GeneralDict,path):
+    global CurrYear
+    fileContext = '''# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
+
+sim-y := {_envName}_common/{_envName}_common_pkg.sv
+'''.format(_envName=GeneralDict['env_name'],_CurrYear=CurrYear)
+    fileName = 'Kbuild'
+    genFile(path,fileName,fileContext)
+
+def genKbuild_env(GeneralDict,path):
+    global CurrYear
+    fileContext = '''# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
+
+sim-y += {_envName}_env_pkg.sv
+
+rtlflags-y += +incdir+$(srctree)/$(src)/src
+'''.format(_envName=GeneralDict['env_name'],_CurrYear=CurrYear)
+    fileName = 'Kbuild'
+    genFile(path,fileName,fileContext)
+
+def genKbuild_seqlib(path):
+    global CurrYear
+    fileContext = '''# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
+
+sim-y += seqlib_pkg.sv
+
+rtlflags-y += +incdir+$(srctree)/$(src)/src
+'''.format(_CurrYear=CurrYear)
+    fileName = 'Kbuild'
+    genFile(path,fileName,fileContext)
+
+def genAllKbuild(GeneralDict,AgentList,PathDict):
+    genKbuild_top(GeneralDict,PathDict['env_top'])
+    genKbuild_agent(GeneralDict,AgentList,PathDict['agent'])
+    genKbuild_common(GeneralDict,PathDict['common'])
+    genKbuild_env(GeneralDict,PathDict['env'])
+    genKbuild_seqlib(PathDict['seqlib'])
+
 ##========================================================================sim=============================================================================================
 def genSim_makefile(GeneralDict,path):
     global CurrTime
@@ -3350,6 +3452,7 @@ def genEnvConfigIniMain():
 if __name__=="__main__":
     print('============>Step1: begin to genarate env verification !')
     CurrTime = time.strftime("%Y-%m-%d",time.localtime())
+    CurrYear = time.strftime("%Y",time.localtime())
     CurrPath = sys.path[0]
     try:
         IniFileName = sys.argv[1]
@@ -3387,6 +3490,9 @@ if __name__=="__main__":
 
     print("============>Step9: ready to gen seqlib !")
     genAllSeqlib(tmpGeneralDict,tmpAgentList,tmpPathDict)
+
+    print("============>Step10: ready to gen Kbuild !")
+    genAllKbuild(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
     # print("============>Step9: ready to gen cfg !")
     # genAllCfg(tmpGeneralDict,tmpAgentList,tmpPathDict)
