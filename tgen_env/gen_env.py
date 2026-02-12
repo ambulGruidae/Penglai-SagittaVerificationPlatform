@@ -142,10 +142,7 @@ def doScrpitCopy(PathDict):
 ##========================================================================env common=============================================================================================
 def genEnvCommon_fileList(GeneralDict, path):
     ModuleName = '{_envName}_common'.format(_envName=GeneralDict['env_name'])
-    AuthorName = GeneralDict['author']
-    Description = 'file list'
     FileType = 'f'
-    Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''
 +incdir+./src
 {_envName}_common_pkg.sv
@@ -196,7 +193,6 @@ endpackage
 import {_envName}_common_pkg::*;
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -219,7 +215,6 @@ endpackage
 import {_envName}_dec::*;
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'],_Parameter=Parameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -346,7 +341,6 @@ function bit {_moduleName}::compare(uvm_object rhs, uvm_comparer comparer = null
 endfunction : compare
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_classParameter=classParameter,_registerParameter=registerParameter,_memberDeclare=memberDeclare,_packFunctionName=packFunctionName,\
     _memberFactory=memberFactory,_packFunction=packFunction,_memberPsDispaly=memberPsDispaly,_parameterList=parameterList,_compareFunction=compareFunction,_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
@@ -382,7 +376,6 @@ endfunction
 //endfunction
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -397,10 +390,7 @@ def genEnvCommon(GeneralDict, AgentList, PathDict):
 ##========================================================================agent=============================================================================================
 def genAgent_fileList(GeneralDict, agent, path):
     ModuleName = '{_agentName}_agent'.format(_agentName=agent['agent_name'])
-    AuthorName = GeneralDict['author']
-    Description = 'file list'
     FileType = 'f'
-    Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''
 +incdir+./src
 {_agentName}_agent_pkg.sv
@@ -456,7 +446,6 @@ endpackage
 import {_agentName}_agent_pkg::*;
 
 `endif
-
 '''.format(_Title=Title,_agentName=agent['agent_name'],_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -479,7 +468,6 @@ endpackage : {_moduleName}
 import {_moduleName}::*;
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_Parameter=Parameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -569,7 +557,6 @@ interface {_moduleName} {_agentClassParameter} (input bit clk, input bit rst_n);
 endinterface:{_moduleName}
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentClassParameter=agentClassParameter,_signalDeclare=signalDeclare,_drvClocking=drvClocking,_monClocking=monClocking,_agentName=agent['agent_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -597,9 +584,7 @@ constraint {_moduleName}::default_{_signal}_cons{{
 
 }}
 '''.format(_moduleName=ModuleName,_signal=signalName)
-        compareFunction +='''
-        `TCNT_PKT_CMP({_signal}, "{_signal}");
-'''.format(_signal=signalName)
+        compareFunction += ' '*8 + '`TCNT_PKT_CMP({_signal}, "{_signal}");\n'.format(_signal=signalName)
     fileContext = '''{_Title}
 class {_moduleName} {_agentClassParameter} extends tcnt_data_base;
 {_memberDeclare}
@@ -663,7 +648,6 @@ function bit {_moduleName}::compare(uvm_object rhs, uvm_comparer comparer = null
 endfunction:compare
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_memberDeclare=memberDeclare,_memberConstraintDeclare=memberConstraintDeclare,_memberFactory=memberFactory,_memberConstraint=memberConstraint,_memberPsDispaly=memberPsDispaly,\
     _compareFunction=compareFunction,_agentName=agent['agent_name'],_agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
@@ -698,7 +682,6 @@ function void {_moduleName}::post_randomize();
 endfunction : post_randomize
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -743,7 +726,6 @@ task {_moduleName}::post_body();
 endtask : post_body
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentName=agent['agent_name'],_agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -860,7 +842,6 @@ task {_moduleName}::drive_idle(tcnt_dec_base::drv_mode_e drv_mode);
 endtask : drive_idle
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentName=agent['agent_name'],_drvTr=drvTr,_drvIdle=drvIdle,\
     _agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
@@ -939,7 +920,6 @@ task {_moduleName}::mon_data();
 endtask : mon_data
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentName=agent['agent_name'],_signalDeclare=signalDeclare,_signalSample=signalSample,_signalCheckXZ=signalCheckXZ,_signalToTr=signalToTr,\
     _agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
@@ -981,7 +961,6 @@ task {_moduleName}::main_phase(uvm_phase phase);
 endtask : main_phase
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentName=agent['agent_name'],_agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1024,7 +1003,6 @@ function void {_moduleName}::connect_phase(uvm_phase phase);
 endfunction : connect_phase
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentName=agent['agent_name'],_agentClassParameter=agentClassParameter,_agentParameterList=agentParameterList,_agentRegisterParameter=agentRegisterParameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1080,7 +1058,6 @@ endpackage
 import seqlib_pkg::*;
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1140,7 +1117,6 @@ task {_moduleName}::post_body();
 endtask : post_body
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_envName=GeneralDict['env_name'],_agentDefaultSeq=agentDefaultSeq,_agentNewDefaultSeq=agentNewDefaultSeq)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1152,10 +1128,7 @@ def genAllSeqlib(GeneralDict,AgentList,PathDict):
 ##========================================================================environment=============================================================================================
 def genEnv_fileList(GeneralDict,path):
     ModuleName = '{_envName}_env'.format(_envName=GeneralDict['env_name'])
-    AuthorName = GeneralDict['author']
-    Description = 'file list'
     FileType = 'f'
-    Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''
 +incdir+./src
 {_envName}_env_pkg.sv
@@ -1204,7 +1177,6 @@ endpackage
 import {_envName}_env_pkg::*;
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1305,7 +1277,6 @@ task {_moduleName}::main_process();
 endtask
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_envName=GeneralDict['env_name'],_portDeclare=portDeclare,_portNew=portNew,_TrDeclare=TrDeclare,_TrProcess=TrProcess,\
     _classParameter=classParameter,_registerParameter=registerParameter,_parameterList=parameterList)
     fileName = ModuleName+'.'+FileType
@@ -1391,7 +1362,6 @@ function void {_moduleName}::post_randomize();
 endfunction : post_randomize
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_memberDeclare=memberDeclare,_memberNew=memberNew,_memberPostRand=memberPostRand)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1530,7 +1500,6 @@ function void {_moduleName}::connect_phase(uvm_phase phase);
 endfunction
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_memberDeclare=memberDeclare,_memberNew=memberNew,_fifoConnect=fifoConnect,_sqrConnect=sqrConnect,_envName=GeneralDict['env_name'],\
     _classParameter=classParameter,_registerParameter=registerParameter)
     fileName = ModuleName+'.'+FileType
@@ -1582,7 +1551,6 @@ task {_moduleName}::main_phase(uvm_phase phase);
 endtask : main_phase
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentSqr=agentSqr,_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1673,7 +1641,6 @@ task {_moduleName}::scb_compare();
 endtask : scb_compare
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_agentXactionQueueDeclare=agentXactionQueueDeclare,_agentXactionQueueDelete=agentXactionQueueDelete,_agentXactionTmp=agentXactionTmp,_envName=GeneralDict['env_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1862,10 +1829,7 @@ def copyIni(path):
 ##========================================================================tc=============================================================================================
 def genTc_fileList(GeneralDict, path):
     ModuleName = 'tc'
-    AuthorName = GeneralDict['author']
-    Description = 'file list'
     FileType = 'f'
-    Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''
 +incdir+./src
 tc_pkg.sv
@@ -1920,7 +1884,6 @@ endpackage
 import tc_pkg::*;
 
 `endif
-
 '''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1937,9 +1900,7 @@ def genTc_define(GeneralDict,AgentList, path):
             seqDefine += '`define seq_{_agentName}(tc) ``tc``__seq_{_agentName}\n'.format(_agentName=agent['agent_name'])
     fileContext = '''{_Title}
 {_seqDefine}
-
 `endif
-
 '''.format(_Title=Title,_seqDefine=seqDefine)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1951,7 +1912,6 @@ def genTc_if(GeneralDict,AgentList, path):
     FileType = 'sv'
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''{_Title}
-
 interface tc_if(input clk);
     logic rst_n;
     //logic force_xxx;
@@ -1959,7 +1919,6 @@ interface tc_if(input clk);
 endinterface
 
 `endif
-
 '''.format(_Title=Title)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -1994,12 +1953,11 @@ def genTc_base(GeneralDict,AgentList,path):
 `define TC_NAME {_moduleName}
 
 class `TC_NAME extends tcnt_test_base;
-
     virtual tc_if vif;
     {_envName}_env {_parameterList} env;
 
- 	///aa_test_reg_model   reg_model;
- 	///aa_test_reg_adapter reg_adapter;
+    ///aa_test_reg_model   reg_model;
+    ///aa_test_reg_adapter reg_adapter;
 
     function new(string name = \"`TC_NAME\", uvm_component parent = null);
         super.new(name, parent);
@@ -2051,7 +2009,6 @@ endtask
 `undef TC_NAME
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_envName=GeneralDict['env_name'],_parameterList=parameterList,_defaultSeqFactory=defaultSeqFactory)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2170,7 +2127,6 @@ endtask
 `undef TC_NAME
 
 `endif
-
 '''.format(_Title=Title,_moduleName=ModuleName,_defaultSeq=defaultSeq,_seqOverride=seqOverride,_defaultSeqFactory=defaultSeqFactory,_setStartSend=setStartSend)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2232,7 +2188,6 @@ if __name__=="__main__":
     file = open(PkgFile,'w')
     file.write(newPkgFileLine)
     file.close
-
 '''.format(_authorName=AuthorName)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2319,7 +2274,6 @@ begin
 end
 
 `endif
-
 '''.format(_Title=Title)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2331,7 +2285,6 @@ def genTb_readSdf(GeneralDict, path):
     FileType = 'sv'
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
     fileContext = '''{_Title}
-
 `ifdef RTL_SIM
 initial begin
     $display("doing rtl simulation");
@@ -2343,7 +2296,6 @@ initial begin
     $display("doing gate simulation without sdf");
 end
 `endif
-
 
 `ifdef MAX_SDF
 initial begin
@@ -2415,7 +2367,6 @@ end
 `endif
 
 `endif
-
 '''.format(_Title=Title)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2485,7 +2436,6 @@ def genTb_dutInstance(GeneralDict,AgentList,path):
 );
 
 `endif
-
 '''.format(_Title=Title,_signalDeclare=signalDeclare,_rtlName=GeneralDict['rtl_top_name'],_rtlInstance=GeneralDict['u_rtl_top_name'],_signalConnect=signalConnect)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2601,7 +2551,7 @@ def genTb_dutConnect(GeneralDict,AgentList,path):
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
     includeContext, macroConnect = '',''
     for agent in AgentList:
-        includeContext += '`include "../../../{_envLevel}/{_envName}/tb/{_agentName}_connect.sv"\n'.format(_envLevel=GeneralDict['env_level'],_envName=GeneralDict['env_name'],_agentName=agent['agent_name'])
+        includeContext += '`include "tb/{_agentName}_connect.sv"\n'.format(_envLevel=GeneralDict['env_level'],_envName=GeneralDict['env_name'],_agentName=agent['agent_name'])
         macroConnect += ' '*4 + '`{_UEnvName}__{_UAgentName}_CONNECT(u_{_envName}__{_agentName}_if, ENV_PATH.u_{_agentName}_agent, RTL_PATH) \\\n'.format(_UEnvName=GeneralDict['env_name'].upper(),_UAgentName=agent['agent_name'].upper(),_envName=GeneralDict['env_name'],_agentName=agent['agent_name'])
     macroConnect = macroConnect[:-2]
     fileContext = '''{_Title}
@@ -2680,7 +2630,6 @@ module top_tb;
 
 endmodule
 `endif
-
 '''.format(_Title=Title,_envLevel=GeneralDict['env_level'],_envName=GeneralDict['env_name'],_UEnvName=GeneralDict['env_name'].upper(),_rtlInstance=GeneralDict['u_rtl_top_name'])
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
@@ -2969,24 +2918,24 @@ def DoIniParser():
 def GenDir(GeneralDict,AgentList):
     PathDict = {}
     PrjPath = GeneralDict['prj_path']
-    PathDict['rtl'] = os.path.abspath(os.path.join(PrjPath,'rtl'))
-    PathDict['lib'] = os.path.abspath(os.path.join(PrjPath,'lib'))
-    PathDict['scr'] = os.path.abspath(os.path.join(PrjPath,'scr'))
-    PathDict['scr_verif'] = os.path.abspath(os.path.join(PathDict['scr'],'verif'))
-    PathDict['scr_common'] = os.path.abspath(os.path.join(PathDict['scr'],'common'))
+    # PathDict['rtl'] = os.path.abspath(os.path.join(PrjPath,'rtl'))
+    # PathDict['lib'] = os.path.abspath(os.path.join(PrjPath,'lib'))
+    # PathDict['scr'] = os.path.abspath(os.path.join(PrjPath,'scr'))
+    # PathDict['scr_verif'] = os.path.abspath(os.path.join(PathDict['scr'],'verif'))
+    # PathDict['scr_common'] = os.path.abspath(os.path.join(PathDict['scr'],'common'))
 
-    PathDict['ver'] = os.path.abspath(os.path.join(PrjPath,'ver'))
-    PathDict['ver_common'] = os.path.abspath(os.path.join(PathDict['ver'],'common'))
-    PathDict['ver_common_agent'] = os.path.abspath(os.path.join(PathDict['ver_common'],'agent'))
-    PathDict['cmodel'] = os.path.abspath(os.path.join(PathDict['ver'],'cmodel'))
-    PathDict['formal'] = os.path.abspath(os.path.join(PathDict['ver'],'formal'))
-    PathDict['fw'] = os.path.abspath(os.path.join(PathDict['ver'],'fw'))
-    PathDict['st'] = os.path.abspath(os.path.join(PathDict['ver'],'st'))
-    PathDict['it'] = os.path.abspath(os.path.join(PathDict['ver'],'it'))
-    PathDict['bt'] = os.path.abspath(os.path.join(PathDict['ver'],'bt'))
-    PathDict['ut'] = os.path.abspath(os.path.join(PathDict['ver'],'ut'))
+    # PathDict['ver'] = os.path.abspath(os.path.join(PrjPath,'ver'))
+    # PathDict['ver_common'] = os.path.abspath(os.path.join(PathDict['ver'],'common'))
+    # PathDict['ver_common_agent'] = os.path.abspath(os.path.join(PathDict['ver_common'],'agent'))
+    # PathDict['cmodel'] = os.path.abspath(os.path.join(PathDict['ver'],'cmodel'))
+    # PathDict['formal'] = os.path.abspath(os.path.join(PathDict['ver'],'formal'))
+    # PathDict['fw'] = os.path.abspath(os.path.join(PathDict['ver'],'fw'))
+    # PathDict['st'] = os.path.abspath(os.path.join(PathDict['ver'],'st'))
+    # PathDict['it'] = os.path.abspath(os.path.join(PathDict['ver'],'it'))
+    # PathDict['bt'] = os.path.abspath(os.path.join(PathDict['ver'],'bt'))
+    # PathDict['ut'] = os.path.abspath(os.path.join(PathDict['ver'],'ut'))
 
-    PathDict['env_top'] = os.path.abspath(os.path.join(PathDict[GeneralDict['env_level']],GeneralDict['env_name']))
+    PathDict['env_top'] = os.path.abspath(os.path.join(PrjPath,GeneralDict['env_name']))
     PathDict['common'] = os.path.abspath(os.path.join(PathDict['env_top'],'common'))
     PathDict['env_common'] = os.path.abspath(os.path.join(PathDict['common'],'{_envName}_common'.format(_envName=GeneralDict['env_name'])))
     PathDict['env_common_src'] = os.path.abspath(os.path.join(PathDict['env_common'],'src'))
@@ -3489,7 +3438,7 @@ if __name__=="__main__":
     prjInfo = tmpGeneralDict['prj_path'] + "/ver/" + tmpGeneralDict['env_level'] + "/" + tmpGeneralDict['env_name']
     print("============>Step3: ready to mkdir about {_prjInfo} !".format(_prjInfo=prjInfo))
     tmpPathDict = GenDir(tmpGeneralDict,tmpAgentList)
-    doScrpitCopy(tmpPathDict)
+    # doScrpitCopy(tmpPathDict)
 
     print("============>Step4: ready to gen {_envName}_common !".format(_envName=tmpGeneralDict['env_name']))
     genEnvCommon(tmpGeneralDict,tmpAgentList,tmpPathDict)
