@@ -2189,14 +2189,14 @@ if __name__=="__main__":
     parser.add_argument("--tc_old", type=str, default="tc_sanity", help='the tc name which the new tc copy by, default is tc_sanity')
     parser.add_argument("--tc_new", type=str, default="tc_By_GenTc", help='the new tc name, default is tc_By_GenTc')
     parser.add_argument("--author", type=str, default="{_authorName}", help='the author name, default is "{_authorName}"')
-    parser.add_argument("--tc_list", type=str, default="tc.f", help='the filelist which the new tc appended to, default is tc.f')
+    parser.add_argument("--tc_yaml", type=str, default="../tc.yaml", help='the yaml which the new tc appended to, default is ../tc.yaml')
     parser.add_argument("--tc_pkg", type=str, default="tc_pkg.sv", help='the package which the new tc appended to, default is tc_pkg.sv')
 
     args = parser.parse_args()
     TcOldName = args.tc_old
     TcNewName = args.tc_new
     Author = args.author
-    TcList = args.tc_list
+    TcYaml = args.tc_yaml
     TcPkg = args.tc_pkg
     CurrTime = time.strftime("%Y-%m-%d",time.localtime())
 
@@ -2214,9 +2214,9 @@ if __name__=="__main__":
     os.system('sed -i "s/\`define.*_SV.*/\`define {{_UTcNewName}}__SV/g" {{_TcNew}}'.format(_UTcNewName=TcNewName.upper(),_TcNew=TcNew))
     os.system('sed -i "s/\`define TC_NAME.*/\`define TC_NAME {{_TcNewName}}/g" {{_TcNew}}'.format(_TcNewName=TcNewName,_TcNew=TcNew))
     #添加file到filelist
-    FileList = os.path.abspath(os.path.join(TcPath,'{{_FileList}}'.format(_FileList=TcList)))
+    FileList = os.path.abspath(os.path.join(TcPath,'{{_FileList}}'.format(_FileList=TcYaml)))
     file = open(FileList,'a')
-    file.write('// ./src/{{_TcNewName}}.sv\n'.format(_TcNewName=TcNewName))
+    file.write('      - name: {{_TcNewName}}\n'.format(_TcNewName=TcNewName))
     file.close
     #添加file到package
     PkgFile = os.path.abspath(os.path.join(TcPath,'{{_PkgFile}}'.format(_PkgFile=TcPkg)))
