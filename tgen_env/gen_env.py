@@ -2238,6 +2238,23 @@ if __name__=="__main__":
     genFile(path,fileName,fileContext)
     chmodXfile(path,fileName)
 
+def genTc_tc_yaml(GeneralDict,path):
+    ModuleName = 'tc'
+    FileType = 'yaml'
+    fileContext = '''name: "{_envName}"
+epic: "KMH-Core-UT"
+stories:
+  - name: "sanity"
+    tests:
+      - name: tc_sanity
+
+  - name: "normal"
+    tests:
+      - name: tc_base
+'''.format(_envName=GeneralDict['env_name'])
+    fileName = ModuleName+'.'+FileType
+    genFile(path,fileName,fileContext)
+
 def genAllTc(GeneralDict,AgentList,PathDict):
     # genTc_fileList(GeneralDict,PathDict['tc'])
     genTc_package(GeneralDict, AgentList, PathDict['tc'])
@@ -2246,6 +2263,7 @@ def genAllTc(GeneralDict,AgentList,PathDict):
     genTc_base(GeneralDict,AgentList,PathDict['tc_src'])
     genTc_sanity(GeneralDict,AgentList,PathDict['tc_src'])
     genTc_gentc_py(GeneralDict,PathDict['tc'])
+    genTc_tc_yaml(GeneralDict,PathDict['env_top'])
 
 ##========================================================================tb=============================================================================================
 def genTb_genWave(GeneralDict, path):
