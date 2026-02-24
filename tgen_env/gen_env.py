@@ -224,11 +224,11 @@ def getEnvParameter(GeneralDict):
         classParameter = "#("
         parameterList = "#("
         for params in GeneralDict['env_parameter']:
-            classParameter += "parameter {_params} = {_envName}_dec::{_params},".format(_params=params,_envName=GeneralDict['env_name'])
-            parameterList += ".{_params}({_params}),".format(_params=params)
-        classParameter = classParameter[:-1]
+            classParameter += "parameter {_params} = {_envName}_dec::{_params}, ".format(_params=params,_envName=GeneralDict['env_name'])
+            parameterList += ".{_params}({_params}), ".format(_params=params)
+        classParameter = classParameter[:-2]
         classParameter += ") "
-        parameterList = parameterList[:-1]
+        parameterList = parameterList[:-2]
         parameterList += ")"
     else:
         classParameter = ""
@@ -255,7 +255,7 @@ def genEnvCommon_common_xaction(GeneralDict, AgentList,path):
 function void {_moduleName}::pack_{_agentName}(uvm_object tr);
     {_agentName}_agent_xaction tr_;
     if (!$cast(tr_, tr)) begin
-        `uvm_fatal(get_type_name(),$sformatf("tr is not a {_agentName}_agent_xaction or its extend"));
+        `uvm_fatal(get_type_name(), $sformatf("tr is not a {_agentName}_agent_xaction or its extend"));
     end
     this.{_agentName}_tr = tr_;
 '''.format(_moduleName=ModuleName,_agentName=agentName)
@@ -279,7 +279,7 @@ function void {_moduleName}::pack_{_agentName}(uvm_object tr);
     else:
         registerParameter = "`uvm_object_utils_begin({_moduleName})".format(_moduleName=ModuleName)
     fileContext = '''{_Title}
-class {_moduleName} {_classParameter} extends tcnt_data_base;
+class {_moduleName} {_classParameter}extends tcnt_data_base;
 {_memberDeclare}
     extern function new(string name = "{_moduleName}");
     extern function void pack();
@@ -288,7 +288,7 @@ class {_moduleName} {_classParameter} extends tcnt_data_base;
     extern function void post_randomize();
 {_packFunctionName}
     extern function string psdisplay(string prefix = "");
-    extern function bit compare(uvm_object rhs, uvm_comparer comparer=null);
+    extern function bit compare(uvm_object rhs, uvm_comparer comparer = null);
 
     {_registerParameter}
 {_memberFactory}
@@ -302,7 +302,7 @@ endfunction : new
 
 function void {_moduleName}::pack();
     super.pack();
-endfunctioni : pack
+endfunction : pack
 
 function void {_moduleName}::unpack();
     super.unpack();
@@ -314,7 +314,7 @@ endfunction : pre_randomize
 
 function void {_moduleName}::post_randomize();
     super.post_randomize();
-    //this.pack();
+    // this.pack();
 endfunction : post_randomize
 {_packFunction}
 function string {_moduleName}::psdisplay(string prefix = "");
@@ -477,11 +477,11 @@ def getAgentParameter(agent):
         agentClassParameter = "#("
         agentParameterList = "#("
         for params in agent['parameter']:
-            agentClassParameter += "parameter {_params} = {_agentName}_agent_dec::{_params},".format(_params=params,_agentName=agent['agent_name'])
-            agentParameterList += ".{_params}({_params}),".format(_params=params)
-        agentClassParameter = agentClassParameter[:-1]
+            agentClassParameter += "parameter {_params} = {_agentName}_agent_dec::{_params}, ".format(_params=params,_agentName=agent['agent_name'])
+            agentParameterList += ".{_params}({_params}), ".format(_params=params)
+        agentClassParameter = agentClassParameter[:-2]
         agentClassParameter += ") "
-        agentParameterList = agentParameterList[:-1]
+        agentParameterList = agentParameterList[:-2]
         agentParameterList += ")"
     else:
         agentClassParameter = ""
@@ -501,8 +501,8 @@ def getAgentDecParameter(agent,agentList):
     if "parameter" in tmpAgent.keys():
         agentDecParameterList = "#("
         for params in tmpAgent['parameter']:
-            agentDecParameterList += ".{_params}({_agentName}_agent_dec::{_params}),".format(_params=params,_agentName=agentName)
-        agentDecParameterList = agentDecParameterList[:-1]
+            agentDecParameterList += ".{_params}({_agentName}_agent_dec::{_params}), ".format(_params=params,_agentName=agentName)
+        agentDecParameterList = agentDecParameterList[:-2]
         agentDecParameterList += ")"
     else:
         agentDecParameterList = ""
@@ -586,7 +586,7 @@ constraint {_moduleName}::default_{_signal}_cons{{
 '''.format(_moduleName=ModuleName,_signal=signalName)
         compareFunction += ' '*8 + '`TCNT_PKT_CMP({_signal}, "{_signal}");\n'.format(_signal=signalName)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_data_base;
+class {_moduleName} {_agentClassParameter}extends tcnt_data_base;
 {_memberDeclare}
 {_memberConstraintDeclare}
     extern function new(string name = "{_moduleName}");
@@ -621,7 +621,7 @@ endfunction : pre_randomize
 
 function void {_moduleName}::post_randomize();
     super.post_randomize();
-    //this.pack();
+    // this.pack();
 endfunction : post_randomize
 
 function string {_moduleName}::psdisplay(string prefix = "");
@@ -669,7 +669,7 @@ class {_moduleName} extends tcnt_agent_cfg_base;
     extern function void post_randomize();
 endclass : {_moduleName}
 
-function {_moduleName}::new(string name = "{_moduleName}\");
+function {_moduleName}::new(string name = "{_moduleName}");
     super.new(name);
 endfunction : new
 
@@ -698,7 +698,7 @@ def genAgent_default_sequence(GeneralDict, agent, path):
     else:
         agentRegisterParameter = "`uvm_object_utils({_moduleName})".format(_moduleName=ModuleName)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_default_sequence_base #({_agentName}_agent_xaction{_agentParameterList});
+class {_moduleName} {_agentClassParameter}extends tcnt_default_sequence_base #({_agentName}_agent_xaction{_agentParameterList});
     {_agentRegisterParameter}
 
     extern function new(string name = "{_moduleName}");
@@ -766,7 +766,7 @@ def genAgent_driver(GeneralDict, agent, path):
     end
 '''.format(_drvIdle0=drvIdle0,_drvIdle1=drvIdle1,_drvIdleX=drvIdleX,_drvIdleR=drvIdleR,_drvIdleL=drvIdleL)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_driver_base#(virtual {_agentName}_agent_interface{_agentParameterList}, {_agentName}_agent_cfg, {_agentName}_agent_xaction{_agentParameterList});
+class {_moduleName} {_agentClassParameter}extends tcnt_driver_base#(virtual {_agentName}_agent_interface{_agentParameterList}, {_agentName}_agent_cfg, {_agentName}_agent_xaction{_agentParameterList});
     {_agentRegisterParameter}
 
     extern function new(string name, uvm_component parent);
@@ -828,7 +828,7 @@ task {_moduleName}::main_phase(uvm_phase phase);
         forever begin
             @this.vif.drv_mp.drv_cb;
             `uvm_fatal(get_type_name(), $sformatf("sqr_sw==OFF & drv_sw==ON, please give a driver send task!"))
-            //send task
+            // send task
         end
     end
 endtask : main_phase
@@ -878,7 +878,7 @@ def genAgent_monitor(GeneralDict, agent, path):
             print(str(sys._getframe().f_lineno) + "@" + "WARN::::get the single width error for monitor XZcheck::::{_agentName}.{_signal}>>>>>>{_signalWidth}".format(_agentName=agent['agent_name'],_signal=signalName,_signalWidth=signalWidth))
         signalCheckXZ += ' '*12 + '`TCNT_CHECK_SIG_XZ({_signal},{_signal},{_signalWidth});\n'.format(_signal=signalName,_signalWidth=signalWidth)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_monitor_base#(virtual {_agentName}_agent_interface{_agentParameterList}, {_agentName}_agent_cfg, {_agentName}_agent_xaction{_agentParameterList});
+class {_moduleName} {_agentClassParameter}extends tcnt_monitor_base#(virtual {_agentName}_agent_interface{_agentParameterList}, {_agentName}_agent_cfg, {_agentName}_agent_xaction{_agentParameterList});
     {_agentRegisterParameter}
 
     extern function new(string name, uvm_component parent);
@@ -937,7 +937,7 @@ def genAgent_sequencer(GeneralDict, agent, path):
     else:
         agentRegisterParameter = "`uvm_component_utils({_moduleName})".format(_moduleName=ModuleName)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_sequencer_base #({_agentName}_agent_xaction{_agentParameterList});
+class {_moduleName} {_agentClassParameter}extends tcnt_sequencer_base #({_agentName}_agent_xaction{_agentParameterList});
     {_agentRegisterParameter}
     extern function new(string name, uvm_component parent);
     extern task main_phase(uvm_phase phase);
@@ -977,7 +977,7 @@ def genAgent_agent(GeneralDict, agent, path):
     else:
         agentRegisterParameter = "`uvm_component_utils({_moduleName})".format(_moduleName=ModuleName)
     fileContext = '''{_Title}
-class {_moduleName} {_agentClassParameter} extends tcnt_agent_base#(
+class {_moduleName} {_agentClassParameter}extends tcnt_agent_base#(
                                         .VIF_BUS(virtual {_agentName}_agent_interface{_agentParameterList}),
                                         .cfg_t({_agentName}_agent_cfg),
                                         .seq_t({_agentName}_agent_xaction{_agentParameterList}),
@@ -1211,22 +1211,22 @@ def genEnv_rm(GeneralDict,AgentList,path):
             if agent["scb_port_sel"]=="exp":
                 scbConnect = '''
             this.rm_item_exp_port.write({_agentName}_tr_out);
-            //this.rm_item_act_port.write({_agentName}_tr_out);'''.format(_agentName=agent['agent_name'])
+            // this.rm_item_act_port.write({_agentName}_tr_out);'''.format(_agentName=agent['agent_name'])
             else:
                 scbConnect = '''
-            //this.rm_item_exp_port.write({_agentName}_tr_out);
+            // this.rm_item_exp_port.write({_agentName}_tr_out);
             this.rm_item_act_port.write({_agentName}_tr_out);'''.format(_agentName=agent['agent_name'])
         else:
                 scbConnect = '''
             this.rm_item_exp_port.write({_agentName}_tr_out);
-            //this.rm_item_act_port.write({_agentName}_tr_out);'''.format(_agentName=agent['agent_name'])
+            // this.rm_item_act_port.write({_agentName}_tr_out);'''.format(_agentName=agent['agent_name'])
         TrProcess +='''
         forever begin
             this.{_agentName}_mon_item_port.get({_agentName}_tr_in);
-            `uvm_info(get_type_name(),$sformatf("{_agentName}_mon_item_port get as %s",{_agentName}_tr_in.psdisplay()),UVM_DEBUG)
-            //if (!$cast({_agentName}_tr_out, {_agentName}_tr_in)) begin
-            //    `uvm_fatal(get_type_name(),$sformatf("{_agentName}_tr_in,is not a {_envName}_common_xaction or its extend\"))
-            //end
+            `uvm_info(get_type_name(), $sformatf("{_agentName}_mon_item_port get as %s", {_agentName}_tr_in.psdisplay()),UVM_DEBUG)
+            // if (!$cast({_agentName}_tr_out, {_agentName}_tr_in)) begin
+            //     `uvm_fatal(get_type_name(), $sformatf("{_agentName}_tr_in is not a {_envName}_common_xaction or its extend"))
+            // end
             {_agentName}_tr_out = {_envName}_common_xaction{_parameterList}::type_id::create("{_agentName}_tr_out");
             {_agentName}_tr_out.channel_id = {_agentName}_tr_in.channel_id;
 {_DoPack}
@@ -1234,11 +1234,11 @@ def genEnv_rm(GeneralDict,AgentList,path):
         end
 '''.format(_agentName=agent['agent_name'],_envName=GeneralDict['env_name'],_parameterList=parameterList,_DoPack=DoPack,_scbConnect=scbConnect[1:])
     fileContext = '''{_Title}
-class {_moduleName} {_classParameter} extends tcnt_rm_base#(.seq_item_t({_envName}_common_xaction{_parameterList}));
+class {_moduleName} {_classParameter}extends tcnt_rm_base#(.seq_item_t({_envName}_common_xaction{_parameterList}));
     virtual tc_if vif;
     {_envName}_env_cfg cfg;
 
-    //aa_test_reg_model reg_model;
+    // aa_test_reg_model reg_model;
 {_portDeclare}
 
     {_registerParameter}
@@ -1324,10 +1324,10 @@ def genEnv_cfg(GeneralDict,AgentList,path):
             channelIdx += 1
         else:
             memberDeclare +=' '*4 + 'rand ' + '{_instanceByName}_agent_cfg'.format(_instanceByName=instanceByName).ljust(25) +' u_{_agentName}_agent_cfg[{_instanceNum}];\n'.format(_agentName=agent['agent_name'],_instanceNum=agent['instance_num'])
-            memberNew += ' '*4 + 'foreach(this.u_{_agentName}_agent_cfg[i]) begin\n'.format(_agentName=agent['agent_name'])
+            memberNew += ' '*4 + 'foreach (this.u_{_agentName}_agent_cfg[i]) begin\n'.format(_agentName=agent['agent_name'])
             memberNew += ' '*8 + 'this.u_{_agentName}_agent_cfg[i]'.format(_agentName=agent['agent_name']).ljust(30) + ' = {_instanceByName}_agent_cfg::type_id::create($sformatf("u_{_agentName}_agent_cfg[%0d]",i));\n'.format(_agentName=agent['agent_name'],_instanceByName=instanceByName)
             memberNew += ' '*4 + 'end\n'
-            memberPostRand += ' '*4 + 'foreach(this.u_{_agentName}_agent_cfg[i]) begin'.format(_agentName=agent['agent_name'])
+            memberPostRand += ' '*4 + 'foreach (this.u_{_agentName}_agent_cfg[i]) begin'.format(_agentName=agent['agent_name'])
             memberPostRand +='''
         this.u_{_agentName}_agent_cfg[i].sqr_sw = {_masterSW};
         this.u_{_agentName}_agent_cfg[i].drv_sw = {_masterSW};
@@ -1349,7 +1349,7 @@ class {_moduleName} extends uvm_object;
     extern function void post_randomize();
 endclass:{_moduleName}
 
-function {_moduleName}::new(string name = "{_moduleName}\");
+function {_moduleName}::new(string name = "{_moduleName}");
     super.new(name);
 {_memberNew}
 endfunction : new
@@ -1385,9 +1385,9 @@ def genEnv_env(GeneralDict,AgentList,path):
     if (!uvm_config_db#({_envName}_env_cfg)::get(this, "", "cfg", this.cfg)) begin
         cfg = {_envName}_env_cfg::type_id::create("cfg", this);
         void'(this.cfg.randomize());
-        `uvm_info(get_type_name(), $sformatf("build_phase: env cfg is not set, create and randomize by self!"),UVM_NONE)
+        `uvm_info(get_type_name(), $sformatf("build_phase: env cfg is not set, create and randomize by self!"), UVM_NONE)
     end else begin
-        `uvm_info(get_type_name(), $sformatf("build_phase: get_cfg!"),UVM_DEBUG)
+        `uvm_info(get_type_name(), $sformatf("build_phase: get_cfg!"), UVM_DEBUG)
     end
 '''.format(_envName=GeneralDict['env_name'])
     for agent in AgentList:
@@ -1437,13 +1437,13 @@ def genEnv_env(GeneralDict,AgentList,path):
     uvm_tlm_analysis_fifo #({_instanceByName}_agent_xaction{_agentDecParameterList}) {_agentName}_mon2rm_fifo;
 '''.format(_instanceByName=instanceByName,_agentName=agent['agent_name'],_envName=GeneralDict['env_name'],_agentDecParameterList=agentDecParameterList,_instanceNum=agent['instance_num'])
             memberNew += ' '*4 + '{_agentName}_mon2rm_fifo = new($sformatf("{_agentName}_mon2rm_fifo"), this);\n'.format(_agentName=agent['agent_name'])
-            memberNew += ' '*4 + 'foreach (this.u_{_agentName}_agent[i]) begin\n'.format(_agentName=agent['agent_name'])
+            memberNew += ' '*4 + 'foreach (this.u_{_agentName}_agent[i]) begin'.format(_agentName=agent['agent_name'])
             memberNew +='''
         this.u_{_agentName}_agent[i] = {_instanceByName}_agent{_agentDecParameterList}::type_id::create($sformatf("u_{_agentName}_agent[%0d]", i), this);
         uvm_config_db#({_instanceByName}_agent_cfg)::set(this, $sformatf("u_{_agentName}_agent[%0d]", i), "cfg", this.cfg.u_{_agentName}_agent_cfg[i]);
 '''.format(_instanceByName=instanceByName,_agentName=agent['agent_name'],_agentDecParameterList=agentDecParameterList)
             memberNew += ' '*4 + 'end\n'
-            fifoConnect += ' '*4 + 'foreach (this.u_{_agentName}_agent[i]) begin\n'.format(_agentName=agent['agent_name'])
+            fifoConnect += ' '*4 + 'foreach (this.u_{_agentName}_agent[i]) begin'.format(_agentName=agent['agent_name'])
             fifoConnect +='''
         this.u_{_agentName}_agent[i].mon_item_port.connect(this.{_agentName}_mon2rm_fifo.analysis_export);
         this.rm.{_agentName}_mon_item_port.connect(this.{_agentName}_mon2rm_fifo.blocking_get_export);
@@ -1462,9 +1462,9 @@ def genEnv_env(GeneralDict,AgentList,path):
     uvm_tlm_analysis_fifo #({_envName}_common_xaction{_parameterList}) rm2scb_exp_fifo;
     uvm_tlm_analysis_fifo #({_envName}_common_xaction{_parameterList}) rm2scb_act_fifo;\n
     {_envName}_rm {_parameterList} rm;
-    //aa_test_reg_model	reg_model;
-    {_envName}_virtual_sequencer sqr;
-    {_envName}_scb scb;
+    // aa_test_reg_model reg_model;
+    {_envName}_virtual_sequencer {_parameterList} sqr;
+    {_envName}_scb {_parameterList} scb;
 '''.format(_envName=GeneralDict['env_name'],_parameterList=parameterList)
     memberNew +='''
     rm2scb_exp_fifo = new($sformatf("rm2scb_exp_fifo"), this);
@@ -1476,7 +1476,7 @@ def genEnv_env(GeneralDict,AgentList,path):
     uvm_config_db#({_envName}_env_cfg)::set(this, "sqr", "cfg", this.cfg);
 '''.format(_envName=GeneralDict['env_name'],_parameterList=parameterList)
     fileContext = '''{_Title}
-class {_moduleName} {_classParameter} extends tcnt_env_base;
+class {_moduleName} {_classParameter}extends tcnt_env_base;
 {_memberDeclare}
     {_registerParameter}
     extern function new(string name, uvm_component parent);
@@ -1513,6 +1513,11 @@ def genEnv_sqr(GeneralDict,AgentList,path):
     Description = 'virtual sequencer'
     FileType = 'sv'
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
+    classParameter,parameterList = getEnvParameter(GeneralDict)
+    if "env_parameter" in GeneralDict.keys():
+        registerParameter = "`uvm_component_param_utils({_moduleName}{_parameterList})".format(_moduleName=ModuleName,_parameterList=parameterList)
+    else:
+        registerParameter = "`uvm_component_utils({_moduleName})".format(_moduleName=ModuleName)
     agentSqr = ''
     for agent in AgentList:
         if agent['agent_mode']=='master':
@@ -1522,12 +1527,11 @@ def genEnv_sqr(GeneralDict,AgentList,path):
                 for loop_i in range(agent['instance_num']):
                     agentSqr +='    {_agentName}_agent_sequencer {_agentName}_sqr_{_loopI};\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
     fileContext = '''{_Title}
-class {_moduleName} extends tcnt_sequencer_base #({_envName}_common_xaction);
+class {_moduleName} {_classParameter}extends tcnt_sequencer_base #({_envName}_common_xaction);
     virtual tc_if vif;
 {_agentSqr}
     {_envName}_env_cfg cfg;
-
-    `uvm_component_utils({_moduleName})
+    {_registerParameter}
     extern function new(string name, uvm_component parent);
     extern task main_phase(uvm_phase phase);
     extern function void build_phase(uvm_phase phase);
@@ -1553,7 +1557,7 @@ task {_moduleName}::main_phase(uvm_phase phase);
 endtask : main_phase
 
 `endif
-'''.format(_Title=Title,_moduleName=ModuleName,_agentSqr=agentSqr,_envName=GeneralDict['env_name'])
+'''.format(_Title=Title,_moduleName=ModuleName,_agentSqr=agentSqr,_envName=GeneralDict['env_name'],_classParameter=classParameter,_registerParameter=registerParameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
 
@@ -1563,6 +1567,11 @@ def genEnv_scb(GeneralDict,AgentList,path):
     Description = 'scoreboard'
     FileType = 'sv'
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
+    classParameter,parameterList = getEnvParameter(GeneralDict)
+    if "env_parameter" in GeneralDict.keys():
+        registerParameter = "`uvm_component_param_utils({_moduleName}{_parameterList})".format(_moduleName=ModuleName,_parameterList=parameterList)
+    else:
+        registerParameter = "`uvm_component_utils({_moduleName})".format(_moduleName=ModuleName)
     agentXactionTmp = ''
     agentXactionQueueDeclare = ''
     agentXactionQueueDelete = ''
@@ -1578,11 +1587,10 @@ def genEnv_scb(GeneralDict,AgentList,path):
                     agentXactionQueueDeclare += '    {_agentName}_agent_xaction {_agentName}_expect_queue_{_loopI}[$];\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
                     agentXactionQueueDelete += ' '*12 + '{_agentName}_expect_queue_{_loopI}.delete()'.format(_agentName=agent['agent_name'],_loopI=loop_i)
     fileContext = '''{_Title}
-class {_moduleName} extend tcnt_scb_base #(.seq_item_t({_envName}_common_xaction));
+class {_moduleName} {_classParameter}extends tcnt_scb_base #(.seq_item_t({_envName}_common_xaction));
     virtual tc_if vif;
 {_agentXactionQueueDeclare}
-    `uvm_component_utils({_moduleName})
-
+    {_registerParameter}
     extern function new(string name, uvm_component parent);
     extern virtual function void build_phase(uvm_phase phase);
     extern virtual task main_phase(uvm_phase phase);
@@ -1643,7 +1651,7 @@ task {_moduleName}::scb_compare();
 endtask : scb_compare
 
 `endif
-'''.format(_Title=Title,_moduleName=ModuleName,_agentXactionQueueDeclare=agentXactionQueueDeclare,_agentXactionQueueDelete=agentXactionQueueDelete,_agentXactionTmp=agentXactionTmp,_envName=GeneralDict['env_name'])
+'''.format(_Title=Title,_moduleName=ModuleName,_agentXactionQueueDeclare=agentXactionQueueDeclare,_agentXactionQueueDelete=agentXactionQueueDelete,_agentXactionTmp=agentXactionTmp,_envName=GeneralDict['env_name'],_classParameter=classParameter,_registerParameter=registerParameter)
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
 
@@ -1916,8 +1924,8 @@ def genTc_if(GeneralDict,AgentList, path):
     fileContext = '''{_Title}
 interface tc_if(input clk);
     logic rst_n;
-    //logic force_xxx;
-    //logic probe_xxx;
+    // logic force_xxx;
+    // logic probe_xxx;
 endinterface
 
 `endif
@@ -1958,10 +1966,10 @@ class `TC_NAME extends tcnt_test_base;
     virtual tc_if vif;
     {_envName}_env {_parameterList} env;
 
-    ///aa_test_reg_model   reg_model;
-    ///aa_test_reg_adapter reg_adapter;
+    // aa_test_reg_model   reg_model;
+    // aa_test_reg_adapter reg_adapter;
 
-    function new(string name = \"`TC_NAME\", uvm_component parent = null);
+    function new(string name = "`TC_NAME", uvm_component parent = null);
         super.new(name, parent);
     endfunction
     extern virtual function void build_phase(uvm_phase phase);
@@ -1978,23 +1986,23 @@ function void `TC_NAME::build_phase(uvm_phase phase);
     end
     this.env = {_envName}_env{_parameterList}::type_id::create("env", this);
 
- 	///reg_model = aa_test_reg_model::type_id::create("reg_model",this);
- 	///reg_model.configure(null, "");
- 	///reg_model.build();
- 	///reg_model.lock_model();
- 	///reg_model.reset();
-    ///reg_model.set_hdl_path_root("top_tb.dut");
- 	///env.reg_model = this.reg_model;
- 	///reg_adapter = new("reg_adapter");
+    // reg_model = aa_test_reg_model::type_id::create("reg_model",this);
+    // reg_model.configure(null, "");
+    // reg_model.build();
+    // reg_model.lock_model();
+    // reg_model.reset();
+    // reg_model.set_hdl_path_root("top_tb.dut");
+    // env.reg_model = this.reg_model;
+    // reg_adapter = new("reg_adapter");
 
-    //factory default_sequence
+    // factory default_sequence
 {_defaultSeqFactory}
 endfunction
 
 function void `TC_NAME::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    ///reg_model.default_map.set_sequencer(env.xxx_agt.sqr, reg_adapter);
-    ///reg_model.default_map.set_auto_predict(1);
+    // reg_model.default_map.set_sequencer(env.xxx_agt.sqr, reg_adapter);
+    // reg_model.default_map.set_auto_predict(1);
 endfunction
 
 function void `TC_NAME::end_of_elaboration_phase(uvm_phase phase);
@@ -2003,9 +2011,9 @@ endfunction
 
 task `TC_NAME::main_phase(uvm_phase phase);
     super.main_phase(phase);
-    //@(posedge vif.clk);
-    //@(posedge vif.rst_n);
-    //vif.rst_n = xx;
+    // @(posedge vif.clk);
+    // @(posedge vif.rst_n);
+    // vif.rst_n = xx;
 endtask
 
 `undef TC_NAME
@@ -2033,15 +2041,15 @@ class `seq_{_agentName}(`TC_NAME) extends {_agentName}_agent_default_sequence;
     endfunction
 
     virtual task body();
-        //wait for start
+        // wait for start
         while(this.start_send==0) begin
             tcnt_realtime::delay_ns(100);
             void'(uvm_config_db#(int)::get(null, get_full_name(), "start_send", start_send));
         end
         repeat(10) begin
             `uvm_create(req)
-            //void'(req.randomize() with {{req.xxx inside {{[xxx:xx]}};
-            //                             req.yyy == yyy;}});
+            // void'(req.randomize() with {{req.xxx inside {{[xxx:xx]}};
+            //                              req.yyy == yyy;}});
             void'(req.randomize());
             `uvm_send(req)
         end
@@ -2053,18 +2061,18 @@ class `seq_{_agentName}(`TC_NAME) extends {_agentName}_agent_default_sequence;
     `uvm_object_utils_end
 endclass
 '''.format(_agentName=agent['agent_name'])
-            seqOverride += "    //set_type_override_by_type({_agentName}_agent_default_sequence::get_type(), `seq_{_agentName}(`TC_NAME)::get_type());\n".format(_agentName=agent['agent_name'])
+            seqOverride += "    // set_type_override_by_type({_agentName}_agent_default_sequence::get_type(), `seq_{_agentName}(`TC_NAME)::get_type());\n".format(_agentName=agent['agent_name'])
             if agent['instance_type']=='string':
                 for stringName in agent['instance_list']:
-                    defaultSeqFactory +='    //uvm_config_db#(uvm_object_wrapper)::set(this, $sformatf("env.u_{_agentName}_agent[%s].sqr.main_phase", {_stringName}), "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'],_stringName=stringName)
-                    setStartSend += '    //uvm_config_db#(int)::set(this, $sformatf("env.u_{_agentName}_agent[%s].sqr.*",{_stringName}), "start_send", 1);\n'.format(_agentName=agent['agent_name'],_stringName=stringName)
+                    defaultSeqFactory +='    // uvm_config_db#(uvm_object_wrapper)::set(this, $sformatf("env.u_{_agentName}_agent[%s].sqr.main_phase", {_stringName}), "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'],_stringName=stringName)
+                    setStartSend += '    // uvm_config_db#(int)::set(this, $sformatf("env.u_{_agentName}_agent[%s].sqr.*",{_stringName}), "start_send", 1);\n'.format(_agentName=agent['agent_name'],_stringName=stringName)
             elif agent['instance_num']==1:
-                defaultSeqFactory +='    //uvm_config_db#(uvm_object_wrapper)::set(this, "env.u_{_agentName}_agent.sqr.main_phase", "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'])
-                setStartSend += '    //uvm_config_db#(int)::set(this, "env.u_{_agentName}_agent.sqr.*", "start_send", 1);\n'.format(_agentName=agent['agent_name'])
+                defaultSeqFactory +='    // uvm_config_db#(uvm_object_wrapper)::set(this, "env.u_{_agentName}_agent.sqr.main_phase", "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'])
+                setStartSend += '    // uvm_config_db#(int)::set(this, "env.u_{_agentName}_agent.sqr.*", "start_send", 1);\n'.format(_agentName=agent['agent_name'])
             else:
                 for loop_i in range(agent['instance_num']):
-                    defaultSeqFactory +='    //uvm_config_db#(uvm_object_wrapper)::set(this, "env.u_{_agentName}_agent[{_loopI}].sqr.main_phase", "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
-                    setStartSend += '    //uvm_config_db#(int)::set(this, "env.u_{_agentName}_agent[{_loopI}].sqr.*", "start_send", 1);\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+                    defaultSeqFactory +='    // uvm_config_db#(uvm_object_wrapper)::set(this, "env.u_{_agentName}_agent[{_loopI}].sqr.main_phase", "default_sequence", `seq_{_agentName}(`TC_NAME)::type_id::get());\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
+                    setStartSend += '    // uvm_config_db#(int)::set(this, "env.u_{_agentName}_agent[{_loopI}].sqr.*", "start_send", 1);\n'.format(_agentName=agent['agent_name'],_loopI=loop_i)
 
     fileContext = '''{_Title}
 `define TC_NAME {_moduleName}
@@ -2084,11 +2092,11 @@ endclass
 
 function void `TC_NAME::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    //default_sequence set & override 2mux1
-    //>>>>
-    //default_sequence override
+    // default_sequence set & override 2mux1
+    // >>>>
+    // default_sequence override
 {_seqOverride}
-    //set default_sequence
+    // set default_sequence
 {_defaultSeqFactory}
 endfunction
 
@@ -2258,9 +2266,9 @@ begin
     end
     `ifndef NO_FSDB
     if(wave_type=="fsdb") begin
-	    $fsdbDumpfile(fsdb_name);
-	    $fsdbDumpvars(0,"top_tb");
-	    $fsdbDumpMDA(0,"top_tb");
+        $fsdbDumpfile(fsdb_name);
+        $fsdbDumpvars(0,"top_tb");
+        $fsdbDumpMDA(0,"top_tb");
         if($value$plusargs("dly_100us_dump_fsdb=%0d",dly_100us_dump_fsdb)) begin
             `uvm_info("DUMP_FSDB",$sformatf("DUMP FSDB after %0f ms",dly_100us_dump_fsdb/10),UVM_NONE)
             if(dly_100us_dump_fsdb!=0) begin
@@ -2380,7 +2388,7 @@ def genTb_dutInstance(GeneralDict,AgentList,path):
     FileType = 'sv'
     Title = genTitle(AuthorName,ModuleName,FileType,Description)
     signalDeclare,signalConnect = '',''
-    signalConnect += '    //clock & reset\n'
+    signalConnect += '    // clock & reset\n'
     signalConnect += ' '*4 + '.' + 'clock'.ljust(20) + ' ( ' + 'clk'.ljust(20) + ' ),\n'
     signalConnect += ' '*4 + '.' + 'reset'.ljust(20) + ' ( ' + '~tc_if.rst_n'.ljust(20) + ' ),\n'
     for agent in AgentList:
@@ -2658,9 +2666,9 @@ obj-y += seqlib/
 
 # subdir
 subdir-rtlflags-y += +define+{_UEnvName}_UT \\
-		     +incdir+$(srctree)/$(src)/common/{_envName}_common/src \\
-		     +incdir+$(srctree)/$(src)/seqlib/src \\
-		     +incdir+$(srctree)/$(src)
+			 +incdir+$(srctree)/$(src)/common/{_envName}_common/src \\
+			 +incdir+$(srctree)/$(src)/seqlib/src \\
+			 +incdir+$(srctree)/$(src)
 
 subdir-rtlflags-y += $(srctree)/$(src)/../lib/util/common_define.sv
 
@@ -2691,11 +2699,11 @@ def genKbuild_agent(GeneralDict,AgentList,path):
             simAgentPkg += '{_agentName}_agent/{_agentName}_agent_pkg.sv \\\n'.format(_agentName=agent['agent_name'])
             rtlflagsAgentSrc += '+incdir+$(srctree)/$(src)/{_agentName}_agent/src \\\n'.format(_agentName=agent['agent_name'])
         elif i == len(AgentList) - 1:
-            simAgentPkg += ' '*5 + '{_agentName}_agent/{_agentName}_agent_pkg.sv\n'.format(_agentName=agent['agent_name'])
-            rtlflagsAgentSrc += ' '*10 + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src\n'.format(_agentName=agent['agent_name'])
+            simAgentPkg += '\t ' + '{_agentName}_agent/{_agentName}_agent_pkg.sv\n'.format(_agentName=agent['agent_name'])
+            rtlflagsAgentSrc += '\t\t  ' + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src\n'.format(_agentName=agent['agent_name'])
         else:
-            simAgentPkg += ' '*5 + '{_agentName}_agent/{_agentName}_agent_pkg.sv \\\n'.format(_agentName=agent['agent_name'])
-            rtlflagsAgentSrc += ' '*10 + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src \\\n'.format(_agentName=agent['agent_name'])
+            simAgentPkg += '\t ' + '{_agentName}_agent/{_agentName}_agent_pkg.sv \\\n'.format(_agentName=agent['agent_name'])
+            rtlflagsAgentSrc += '\t\t  ' + '+incdir+$(srctree)/$(src)/{_agentName}_agent/src \\\n'.format(_agentName=agent['agent_name'])
 
     fileContext = '''# SPDX-License-Identifier: GPL-2.0
 # Copyright (C) {_CurrYear} Beijing Institute of Open Source Chip
@@ -3419,7 +3427,7 @@ def genEnvConfigIniMain():
     userCfg.mainloop()
 
 if __name__=="__main__":
-    print('============>Step1: begin to genarate env verification !')
+    print('============>Step1: begin to genarate env verification!')
     CurrTime = time.strftime("%Y-%m-%d",time.localtime())
     CurrYear = time.strftime("%Y",time.localtime())
     CurrPath = sys.path[0]
@@ -3434,33 +3442,33 @@ if __name__=="__main__":
         print("gen env_cfg.ini done!")
         sys.exit()
 
-    print('============>Step2: get infomation from {_CurrPath}/{_IniFileName} ! '.format(_CurrPath=CurrPath,_IniFileName=IniFileName))
+    print('============>Step2: get infomation from {_CurrPath}/{_IniFileName}!'.format(_CurrPath=CurrPath,_IniFileName=IniFileName))
     tmpGeneralDict,tmpAgentList = DoIniParser()
 
     prjInfo = tmpGeneralDict['prj_path'] + "/ver/" + tmpGeneralDict['env_level'] + "/" + tmpGeneralDict['env_name']
-    print("============>Step3: ready to mkdir about {_prjInfo} !".format(_prjInfo=prjInfo))
+    print("============>Step3: ready to mkdir about {_prjInfo}!".format(_prjInfo=prjInfo))
     tmpPathDict = GenDir(tmpGeneralDict,tmpAgentList)
     # doScrpitCopy(tmpPathDict)
 
-    print("============>Step4: ready to gen {_envName}_common !".format(_envName=tmpGeneralDict['env_name']))
+    print("============>Step4: ready to gen {_envName}_common!".format(_envName=tmpGeneralDict['env_name']))
     genEnvCommon(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step5: ready to gen agent !")
+    print("============>Step5: ready to gen agent!")
     genAllAgent(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step6: ready to gen ENV !")
+    print("============>Step6: ready to gen env!")
     genAllEnv(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step7: ready to gen tb !")
+    print("============>Step7: ready to gen tb!")
     genAllTb(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step8: ready to gen tc !")
+    print("============>Step8: ready to gen tc!")
     genAllTc(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step9: ready to gen seqlib !")
+    print("============>Step9: ready to gen seqlib!")
     genAllSeqlib(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step10: ready to gen Kbuild !")
+    print("============>Step10: ready to gen Kbuild!")
     genAllKbuild(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
     # print("============>Step9: ready to gen cfg !")
@@ -3469,4 +3477,4 @@ if __name__=="__main__":
     # print("============>Step10: ready to gen sim !")
     # genAllSim(tmpGeneralDict,tmpAgentList,tmpPathDict)
 
-    print("============>Step11: env verification genarated Done !")
+    print("============>Step11: env verification genarated Done!")
