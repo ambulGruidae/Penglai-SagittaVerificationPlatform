@@ -1074,14 +1074,13 @@ package seqlib_pkg;
     import {_envName}_common_pkg::*;
     import {_envName}_env_pkg::*;
 
-    `include "{_envName}_base_sequence.sv"
+    `include "{_seqName}_base_sequence.sv"
 endpackage
 
 import seqlib_pkg::*;
 
 `endif
-
-'''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent)
+'''.format(_Title=Title,_envName=GeneralDict['env_name'],_importAgent=importAgent,_seqName=GeneralDict['env_name'].lower())
     fileName = ModuleName+'.'+FileType
     genFile(path,fileName,fileContext)
 
@@ -1198,6 +1197,8 @@ package {_envName}_env_pkg;
 
     `include "{_envName}_env_cfg.sv"
     `include "{_envName}_rm.sv"
+    `include "{_envName}_scb.sv"
+    `include "{_envName}_virtual_sequencer.sv"
     `include "{_envName}_env.sv"
 endpackage
 
